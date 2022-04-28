@@ -3,7 +3,7 @@ package;
 import flixel.effects.FlxFlicker;
 import flixel.util.FlxTimer;
 import openfl.Lib;
-#if windows
+#if cpp
 import llua.Lua;
 #end
 import Controls.Control;
@@ -97,6 +97,9 @@ class PauseSubState extends MusicBeatSubstate
 		changeSelection();
 
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+
+                addVirtualPad(FULL, A);
+                addPadCamera();
 	}
 
 	override function update(elapsed:Float)
@@ -112,7 +115,7 @@ class PauseSubState extends MusicBeatSubstate
 		var rightP = controls.RIGHT_P;
 		var accepted = controls.ACCEPT;
 		var oldOffset:Float = 0;
-		var songPath = 'assets/data/' + PlayState.SONG.song.toLowerCase() + '/';
+		var songPath = SUtil.getPath() + 'assets/data/' + PlayState.SONG.song.toLowerCase() + '/';
 
 		if (upP)
 		{
@@ -124,7 +127,7 @@ class PauseSubState extends MusicBeatSubstate
 		}
 		
 		#if cpp
-			else if (leftP && FlxG.keys.justPressed.SHIFT)
+			else if (leftP)
 			{
 				oldOffset = PlayState.songOffset;
 				PlayState.songOffset -= 1;
@@ -151,7 +154,7 @@ class PauseSubState extends MusicBeatSubstate
 					cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 					offsetChanged = true;
 				}
-			}else if (rightP && FlxG.keys.justPressed.SHIFT)
+			}else if (rightP)
 			{
 				oldOffset = PlayState.songOffset;
 				PlayState.songOffset += 1;
@@ -202,15 +205,13 @@ class PauseSubState extends MusicBeatSubstate
 						FlxG.save.data.downscroll = false;
 					}
 					PlayState.loadRep = false;
-					#if windows
+					#if cpp
 					if (PlayState.luaModchart != null)
 					{
 						PlayState.luaModchart.die();
 						PlayState.luaModchart = null;
 					}
 					#end
-					if (FlxG.save.data.fpsCap > 290)
-						(cast (Lib.current.getChildAt(0), Main)).setFPSCap(290);
 					
 					FlxG.sound.play(Paths.sound('cancelMenu'));
 					FlxG.switchState(new MainMenuState());

@@ -28,10 +28,13 @@ class OptionsMenu extends MusicBeatState
 	var options:Array<OptionCategory> = [
 		new OptionCategory("Gameplay", [
 			new DFJKOption(controls),
+                        #if android
+                        new CustomizeControls("Change The Android Controls."),
+                        #end
 			new DownscrollOption("Change the layout of the strumline."),
 			new GhostTapOption("Ghost Tapping is when you tap a direction and it doesn't give you a miss."),
 			new Judgement("Customize your Hit Timings (LEFT or RIGHT)"),
-			#if windows
+			#if !mobile
 			new FPSCapOption("Cap your FPS"),
 			#end
 			new ScrollSpeedOption("Change your scroll speed (1 = Chart dependent)"),
@@ -41,23 +44,21 @@ class OptionsMenu extends MusicBeatState
 			new CustomizeGameplay("Drag'n'Drop Gameplay Modules around to your preference")
 		]),
 		new OptionCategory("Appearance", [
-			#if windows
 			new DistractionsAndEffectsOption("Toggle stage distractions that can hinder your gameplay."),
+			#if !mobile
 			new RainbowFPSOption("Make the FPS Counter Rainbow"),
+			#end
 			new AccuracyOption("Display accuracy information."),
 			new NPSDisplayOption("Shows your current Notes Per Second."),
 			new SongPositionOption("Show the songs current position (as a bar)"),
 			new CpuStrums("CPU's strumline lights up when a note hits it."),
-			#else
-			new DistractionsAndEffectsOption("Toggle stage distractions that can hinder your gameplay.")
-			#end
 		]),
 		
 		new OptionCategory("Misc", [
-			#if windows
+			#if !mobile
 			new FPSOption("Toggle the FPS Counter"),
-			new ReplayOption("View replays"),
 			#end
+			new ReplayOption("View replays"),
 			new FlashingLightsOption("Toggle flashing lights that can cause epileptic seizures and strain."),
 			new WatermarkOption("Enable and disable all watermarks from the engine."),
 			new BotPlay("Showcase your charts and mods with autoplay.")
@@ -112,6 +113,9 @@ class OptionsMenu extends MusicBeatState
 			add(grpControls);
 		});
 		changeSelection();
+
+                addVirtualPad(FULL, A_B_X_Y);
+
 		super.create();
 	}
 
@@ -154,34 +158,34 @@ class OptionsMenu extends MusicBeatState
 				
 				if (currentSelectedCat.getOptions()[curSelected].getAccept())
 				{
-					if (FlxG.keys.pressed.SHIFT)
+					if (FlxG.keys.pressed.SHIFT #if android || _virtualpad.buttonX.pressed #end)
 						{
-							if (FlxG.keys.pressed.RIGHT)
+							if (controls.RIGHT)
 								currentSelectedCat.getOptions()[curSelected].right();
-							if (FlxG.keys.pressed.LEFT)
+							if (controls.LEFT)
 								currentSelectedCat.getOptions()[curSelected].left();
 						}
 					else
 					{
-						if (FlxG.keys.justPressed.RIGHT)
+						if (controls.RIGHT_P)
 							currentSelectedCat.getOptions()[curSelected].right();
-						if (FlxG.keys.justPressed.LEFT)
+						if (controls.LEFT_P)
 							currentSelectedCat.getOptions()[curSelected].left();
 					}
 				}
 				else
 				{
 
-					if (FlxG.keys.pressed.SHIFT)
+					if (FlxG.keys.pressed.SHIFT #if android || _virtualpad.buttonX.pressed #end)
 					{
-						if (FlxG.keys.justPressed.RIGHT)
+						if (controls.RIGHT_P)
 							FlxG.save.data.offset += 0.1;
-						else if (FlxG.keys.justPressed.LEFT)
+						else if (controls.LEFT_P)
 							FlxG.save.data.offset -= 0.1;
 					}
-					else if (FlxG.keys.pressed.RIGHT)
+					else if (controls.RIGHT)
 						FlxG.save.data.offset += 0.1;
-					else if (FlxG.keys.pressed.LEFT)
+					else if (controls.LEFT)
 						FlxG.save.data.offset -= 0.1;
 					
 				
@@ -193,21 +197,21 @@ class OptionsMenu extends MusicBeatState
 			}
 			else
 			{
-				if (FlxG.keys.pressed.SHIFT)
+				if (FlxG.keys.pressed.SHIFT #if android || _virtualpad.buttonX.pressed #end)
 					{
-						if (FlxG.keys.justPressed.RIGHT)
+						if (controls.RIGHT_P)
 							FlxG.save.data.offset += 0.1;
-						else if (FlxG.keys.justPressed.LEFT)
+						else if (controls.LEFT_P)
 							FlxG.save.data.offset -= 0.1;
 					}
-					else if (FlxG.keys.pressed.RIGHT)
+					else if (controls.RIGHT)
 						FlxG.save.data.offset += 0.1;
-					else if (FlxG.keys.pressed.LEFT)
+					else if (controls.LEFT)
 						FlxG.save.data.offset -= 0.1;
 			}
 		
 
-			if (controls.RESET)
+			if (controls.RESET #if android || _virtualpad.buttonY.justPressed #end)
 					FlxG.save.data.offset = 0;
 
 			if (controls.ACCEPT)

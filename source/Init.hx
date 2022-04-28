@@ -1,16 +1,14 @@
 package;
 
 import flixel.addons.ui.FlxUIState;
-import sys.thread.Thread;
 import flixel.graphics.FlxGraphic;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.text.FlxText;
-
 import lime.app.Application;
-
+#if desktop
 import Discord.DiscordClient;
-
+#end
 import flixel.FlxSprite;
 
 using StringTools;
@@ -23,15 +21,19 @@ class Init extends FlxUIState
     public static var loadTxt:FlxText;
     var loadingImage:FlxSprite;
 
-	override function create()
-	{   
+    override function create()
+    {
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK];
+		#end
+   
 		loadingImage = new FlxSprite(0,0).loadGraphic(Paths.image('backwall','shared'));
 		loadingImage.updateHitbox();
-        loadingImage.screenCenter();
-        loadingImage.antialiasing = true;
-        add(loadingImage);
+                loadingImage.screenCenter();
+                loadingImage.antialiasing = true;
+                add(loadingImage);
         
-        loadTxt = new FlxText(0, 0, 0, "initialized game", 30);
+                loadTxt = new FlxText(0, 0, 0, "initialized game", 30);
 		loadTxt.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE,FlxColor.BLACK);
 		loadTxt.screenCenter(X);
 		loadTxt.alignment = RIGHT;
@@ -39,61 +41,59 @@ class Init extends FlxUIState
 		loadTxt.x = 0;
 		add(loadTxt);
 
-        trace('starting caching..');
-        
-        Thread.create(() -> 
-        {
-            cache();
-        });
+                trace('starting caching..');
 
+                sys.thread.Thread.create(() -> 
+                {
+                    cache();
+                });
 
-        super.create();
+                super.create();
     }
 
     var calledDone = false;
 
     function initSettings()
     {
-		if (!sys.FileSystem.exists(Sys.getCwd() + "/assets/replays"))
-			sys.FileSystem.createDirectory(Sys.getCwd() + "/assets/replays");
+		if (!sys.FileSystem.exists(SUtil.getPath() + "assets/replays"))
+			sys.FileSystem.createDirectory(SUtil.getPath() + "assets/replays");
 
-        FlxG.save.bind('save', 'neo');
+                FlxG.save.bind('save', 'neo');
         
-        DiscordClient.initialize();
+                #if desktop
+                DiscordClient.initialize();
 
 		Application.current.onExit.add(function(exitCode) 
 		{
 			DiscordClient.shutdown();
 		});
+                #end
 		
 		PlayerSettings.init();
 
 		KadeEngineData.initSave();
 		
-        Highscore.load();
+                Highscore.load();
 
-        //FlxG.sound.muteKeys = null;
-		//FlxG.sound.volumeUpKeys = null;
-        //FlxG.sound.volumeDownKeys = null;
-        FlxG.sound.volume = 1;
-        FlxG.sound.muted = false;
+                FlxG.sound.volume = 1;
+                FlxG.sound.muted = false;
 		FlxG.fixedTimestep = false;
 		FlxG.mouse.useSystemCursor = true;
 		FlxG.mouse.visible = false;
 		FlxG.console.autoPause = false;
-        FlxG.autoPause = false;
-        FlxGraphic.defaultPersist = true;
+                FlxG.autoPause = false;
+                FlxGraphic.defaultPersist = true;
 
-        FlxG.worldBounds.set(0,0);
+                FlxG.worldBounds.set(0,0);
     }
 
     function cache()
     {
-        initSettings();
+                initSettings();
 
-        loadTxt.text = "Loading Songs";
+                loadTxt.text = "Loading Songs";
 
-        var isDebug:Bool = false;
+                var isDebug:Bool = false;
 
 		#if debug
 		isDebug = true;
@@ -101,7 +101,7 @@ class Init extends FlxUIState
 
 		FreeplayState.addWeek(['Tutorial'], 1, ['gf']);
 
-        if (StoryMenuState.weekUnlocked[2] || isDebug)
+                if (StoryMenuState.weekUnlocked[2] || isDebug)
 			FreeplayState.addWeek(['Bopeebo', 'Fresh', 'Dadbattle'], 1, ['dad']);
 
 		if (StoryMenuState.weekUnlocked[2] || isDebug)
@@ -116,21 +116,20 @@ class Init extends FlxUIState
 		if (StoryMenuState.weekUnlocked[5] || isDebug)
 			FreeplayState.addWeek(['Cocoa', 'Eggnog', 'Hallucination'], 5, ['parents-christmas', 'parents-christmas', 'monster-christmas']);
 
+                loadTxt.text = "Loading Sounds";
 
-        loadTxt.text = "Loading Sounds";
+                FlxG.sound.cache(Paths.sound('missnote1', 'shared'));
+                FlxG.sound.cache(Paths.sound('missnote2', 'shared'));
+                FlxG.sound.cache(Paths.sound('missnote3', 'shared'));
 
-        FlxG.sound.cache(Paths.sound('missnote1', 'shared'));
-        FlxG.sound.cache(Paths.sound('missnote2', 'shared'));
-        FlxG.sound.cache(Paths.sound('missnote3', 'shared'));
+                loadTxt.text = "Loaded Everything";
+                trace("Finished caching...");
 
-        loadTxt.text = "Loaded Everything";
-        trace("Finished caching...");
-
-        end();
+                end();
     }
 
     function end()
     {
-        FlxG.switchState(new TitleState());
+                FlxG.switchState(new TitleState());
     }
 }
